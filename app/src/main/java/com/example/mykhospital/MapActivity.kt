@@ -43,6 +43,7 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
     private lateinit var btnRegresar: Button
     private lateinit var btnCalcular: Button
+    private lateinit var btnSalir: Button
     private lateinit var gmap: GoogleMap  // mapa listo para usar
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -81,7 +82,12 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
             // Limpia polilíneas previas
             poly?.remove()
             calcularRuta()
+        }
 
+        //boton salir del sistema
+        btnSalir = findViewById<Button>(R.id.btnSalir)
+        btnSalir.setOnClickListener {
+            finishAffinity()
         }
     }
 

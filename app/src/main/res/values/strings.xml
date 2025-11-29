@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">MykHospital</string>
     <string name="google_maps_key">AIzaSyBhL7_1Y7I5EvCP9-YtoxpVTQN40pA3fhc</string>
+
+    <string-array name="horario_atencion">
+        <item>Mañana</item>
+        <item>Tarde</item>
+        <item>24 Horas</item>
+    </string-array>
 </resources>

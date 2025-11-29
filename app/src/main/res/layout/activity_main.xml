@@ -19,6 +19,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Abrir Mapa"
+        android:layout_marginBottom="16dp"
+        android:textSize="18sp"/>
+
+    <Button
+        android:id="@+id/btnSalir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Salir de Aplicacion"
         android:textSize="18sp"/>
 
 </LinearLayout>

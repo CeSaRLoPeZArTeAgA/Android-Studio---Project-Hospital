@@ -26,20 +26,28 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-        <!-- Botón Calcular (izquierda) -->
-        <Button
-            android:id="@+id/btnCalcular"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Calcular"/>
-        <!-- Botón Regresar (derecha) -->
+
+        <!-- boton Regresar (izquieda) -->
         <Button
             android:id="@+id/btnRegresar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Regresar"/>
+        <!-- boton salir (centro) -->
+        <Button
+            android:id="@+id/btnSalir"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Exit"/>
+        <!-- boton Calcular (derecha) -->
+        <Button
+            android:id="@+id/btnCalcular"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Calcular"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnFormulario: Button
     private lateinit var btnMapa: Button
 
+    private lateinit var btnSalir: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +32,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        //boton salir del sistema
+        btnSalir = findViewById<Button>(R.id.btnSalir)
+        btnSalir.setOnClickListener {
+            finishAffinity()
+        }
 
     }
 }

@@ -2,64 +2,264 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:padding="16dp"
+    android:background="#FAFAFA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- TÍTULO PRINCIPAL -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Formulario de Registro"
-            android:textSize="22sp"
+            android:text="Registro de Hospital Nuevo"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:textColor="#333333"
+            android:layout_marginBottom="20dp" />
 
-        <EditText
-            android:id="@+id/etNombre"
+        <!-- CARD: Datos Generales -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nombre"/>
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:elevation="3dp"
+            android:layout_marginBottom="16dp">
 
-        <EditText
-            android:id="@+id/etApellido"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Datos Generales"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_marginBottom="12dp"/>
+
+            <EditText
+                android:id="@+id/txtNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nombre del Hospital"
+                android:padding="10dp"
+                android:background="#EFEFEF"
+                android:textSize="14sp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Fila POS X y Y -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/txtPosX"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Pos X"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:padding="10dp"
+                    android:textSize="14sp"
+                    android:background="#EFEFEF"
+                    android:layout_marginEnd="8dp"/>
+
+                <EditText
+                    android:id="@+id/txtPosY"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Pos Y"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:padding="10dp"
+                    android:textSize="14sp"
+                    android:background="#EFEFEF"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+
+            <!-- Horario -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Horario Atencion : "
+                    android:textSize="15sp"
+                    android:textColor="#444444"/>
+
+                <Spinner
+                    android:id="@+id/spinnerGenero"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:entries="@array/horario_atencion" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- CARD: Especialidades Médicas -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Apellido"
-            android:layout_marginTop="12dp"/>
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:elevation="3dp"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
 
-        <EditText
-            android:id="@+id/etEmail"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Especialidades Médicas Ofrecidas"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:textSize="18sp"
+                android:layout_marginBottom="10dp"/>
+
+            <!-- PRIMERA FILA -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/chCardiologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cardiología"
+                    android:textSize="11sp"/>
+
+                <CheckBox
+                    android:id="@+id/chNeumologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Neumología"
+                    android:textSize="11sp"/>
+
+                <CheckBox
+                    android:id="@+id/chTraumatologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Traumatología"
+                    android:textSize="11sp"/>
+            </LinearLayout>
+
+            <!-- SEGUNDA FILA -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp">
+
+                <CheckBox
+                    android:id="@+id/chEndocrinologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Endocrinología"
+                    android:textSize="11sp"/>
+
+                <CheckBox
+                    android:id="@+id/chOncologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Oncología"
+                    android:textSize="11sp"/>
+
+                <CheckBox
+                    android:id="@+id/chHematologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Hematología"
+                    android:textSize="11sp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- CARD: Botones -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:layout_marginTop="12dp"/>
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-        <Spinner
-            android:id="@+id/spinnerGenero"
+            <Button
+                android:id="@+id/btnAgregar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Agregar"
+                android:textSize="16sp"
+                android:background="#4CAF50"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnModificar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Modificar"
+                android:textSize="16sp"
+                android:background="#FFC107"
+                android:textColor="#000000"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <!-- LISTA DE HOSPITALES -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
+            android:text="Hospitales Registrados"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"/>
 
-        <Switch
-            android:id="@+id/switchSuscripcion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Suscribirse al boletín"
-            android:layout_marginTop="12dp"/>
+        <ListView
+            android:id="@+id/lvmiscontactosfirebase"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:background="#FFFFFF"
+            android:elevation="3dp"
+            android:divider="#CCCCCC"
+            android:dividerHeight="1dp"
+            android:padding="8dp"/>
 
+        <!-- BOTONES FINALES -->
         <Button
             android:id="@+id/btnRegresar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Regresar"
-            android:layout_marginTop="24dp"
-            android:textSize="18sp"/>
+            android:text="Regresar al Menú Principal"
+            android:textColor="#FFFFFF"
+            android:background="#2196F3"
+            android:layout_marginTop="20dp"
+            android:textSize="16sp"/>
 
+        <Button
+            android:id="@+id/btnSalir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salir del Sistema"
+            android:textColor="#FFFFFF"
+            android:background="#F44336"
+            android:layout_marginTop="10dp"
+            android:textSize="16sp"/>
     </LinearLayout>
 
 </ScrollView>
+
+
