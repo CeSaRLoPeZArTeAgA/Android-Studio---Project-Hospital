@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "209995710607",
+    "firebase_url": "https://basedatosparcial-a5109-default-rtdb.firebaseio.com",
+    "project_id": "basedatosparcial-a5109",
+    "storage_bucket": "basedatosparcial-a5109.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209995710607:android:ad5770a95805692f1370fa",
+        "android_client_info": {
+          "package_name": "com.example.mykhospital"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIz69S3yyWrm_449AXj_rCWqNzIKjSwl0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209995710607:android:ff695d297df1c0451370fa",
+        "android_client_info": {
+          "package_name": "com.example.parcial_cla"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIz69S3yyWrm_449AXj_rCWqNzIKjSwl0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
