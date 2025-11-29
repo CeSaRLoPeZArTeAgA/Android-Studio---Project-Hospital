@@ -1,40 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- El mapa -->
-    <fragment
-        android:id="@+id/mapFragment"
+    <!-- Mapa a pantalla completa -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map_fragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Contenedor de los botones en la parte inferior -->
+    <!-- Contenedor inferior para botones -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/bottom_buttons"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:orientation="horizontal"
-        android:padding="20dp"
-        android:layout_marginBottom="40dp">   <!-- SUBE LOS BOTONES -->
-
+        android:padding="16dp"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
         <!-- Botón Calcular (izquierda) -->
         <Button
             android:id="@+id/btnCalcular"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Calcular" />
-
+            android:text="Calcular"/>
         <!-- Botón Regresar (derecha) -->
         <Button
             android:id="@+id/btnRegresar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Regresar" />
-
+            android:text="Regresar"/>
     </LinearLayout>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
