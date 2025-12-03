@@ -57,12 +57,12 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
     private var UniPosicion = LatLng(-12.061638, -76.977782)  // Puerta 5 UNI
 
-    var poly: Polyline? = null //para manejo de la distancia de mi GPS al hospital mas cercano
+    // Polilíneas independientes
+    private var polyUNI: Polyline? = null
+    private var polyHospital: Polyline? = null  //para manejo de la distancia de mi GPS al hospital mas cercano
 
-    //parametros geograficos
-    //private var Pi = 3.14159265375
-    //private var r = 6371.0 //radio de la tierra
-
+    // lista donde guardamos hospitales desde Firebase y se usara para los calculos
+    private val listaHospitales = mutableListOf<Hospital>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,8 +88,10 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
         btnCalcular = findViewById<Button>(R.id.btnCalcular)
         btnCalcular.setOnClickListener {
             // Limpia polilíneas previas
-            poly?.remove()
-            calcularRuta()
+            polyUNI?.remove()
+            polyHospital?.remove()
+            calcularRutaMasCercana()
+            calcularDistanciaUNI()
         }
 
         //boton salir del sistema
@@ -107,15 +109,24 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
         cargarHospitalesEnMapa()
     }
 
+    //  carga los marcadores y llena listaHospitales
     private fun cargarHospitalesEnMapa() {
 
         database.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
+                listaHospitales.clear() // evitar duplicados
+
                 for (registro in snapshot.children) {
+
                     val h = registro.getValue(Hospital::class.java)
 
                     if (h != null) {
+
+                        // se agrega a la lista real
+                        listaHospitales.add(h)
+
+                        // dibuja marcador
                         val pos = LatLng(h.latitud, h.longitud)
 
                         gmap.addMarker(
@@ -129,7 +140,7 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
                 Toast.makeText(
                     this@MapActivity,
-                    "Hospitales cargados en el mapa",
+                    "Hospitales cargados: ${listaHospitales.size}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -138,35 +149,33 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
         })
     }
 
-
-
-
-    // Obtener mi GPS real
+    // obtener mi posicion GPS
     private fun obtenerMiUbicacion() {
         if (ActivityCompat.checkSelfPermission(
                 this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 10
+                this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 10
             )
             return
         }
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
+
                 Miposicion = LatLng(location.latitude, location.longitude)
 
-                // Marker de MI POSICIÓN
+                // Marcador de MI GPS
                 gmap.addMarker(
                     MarkerOptions()
                         .position(Miposicion)
-                        .title("Mi posición")
+                        .title("Mi ubicación")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 )
 
-                // Marker de UNI
+                // Marcador UNI
                 gmap.addMarker(
                     MarkerOptions()
                         .position(UniPosicion)
@@ -179,65 +188,146 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
                     2000,
                     null
                 )
-            } else {
-                Toast.makeText(this, "No se pudo obtener ubicación", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    // Cálculo de la ruta usando OpenRouteService
-    private fun calcularRuta() {
+     // funcion para obtener la ruta entre dos puntos
+    private suspend fun obtenerRutaEntrePuntos(destino: LatLng): Pair<Double, List<LatLng>?> {
 
         val start = "${Miposicion.longitude},${Miposicion.latitude}"
-        val end = "${UniPosicion.longitude},${UniPosicion.latitude}"
+        val end = "${destino.longitude},${destino.latitude}"
+
+        val api = getRetrofit().create(ApiService::class.java)
+        val call = api.getRoute(
+            "5b3ce3597851110001cf624826138ef006c74296adca414c449bc21e",
+            start, end
+        )
+
+        return if (call.isSuccessful) {
+
+            val feature = call.body()?.features?.firstOrNull()
+
+            val dist = feature?.properties?.summary?.distance ?: 1e12
+            val coords = feature?.geometry?.coordinates
+
+            Pair(dist, coords?.map { LatLng(it[1], it[0]) })
+
+        } else {
+            Pair(1e12, null)
+        }
+    }
+
+
+    //  calculo de la ruta minima a la UNI
+    private fun calcularDistanciaUNI() {
 
         CoroutineScope(Dispatchers.IO).launch {
 
-            try {
-                val call = getRetrofit()
-                    .create(ApiService::class.java)
-                    .getRoute(
-                        "5b3ce3597851110001cf624826138ef006c74296adca414c449bc21e",
-                        start,
-                        end
-                    )
+            val (distUNI, rutaUNI) = obtenerRutaEntrePuntos(UniPosicion)
 
-                if (call.isSuccessful) {
-                    val route = call.body()
-                    val coords = route?.features?.firstOrNull()?.geometry?.coordinates
-
-                    if (coords != null) {
-                        val polyLineOptions = PolylineOptions()
-                            .width(12f)
-                            .color(Color.BLUE)
-                            .startCap(RoundCap())
-                            .endCap(RoundCap())
-                            .jointType(JointType.ROUND)
-
-                        coords.forEach {
-                            polyLineOptions.add(LatLng(it[1], it[0]))
-                        }
-
-                        runOnUiThread {
-                            poly = gmap.addPolyline(polyLineOptions)
-
-                            // Distancia real de carretera
-                            val distKm =
-                                route.features[0].properties.summary.distance / 1000.0
-
-                            Toast.makeText(
-                                this@MapActivity,
-                                "Ruta hacia la UNI: ${"%.2f".format(distKm)} km",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                }
-
-            } catch (e: Exception) {
+            if (rutaUNI == null) {
                 runOnUiThread {
-                    Toast.makeText(this@MapActivity, "Error al calcular ruta", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this@MapActivity,
+                        "No se pudo obtener ruta hacia la UNI",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
+                return@launch
+            }
+
+            runOnUiThread {
+
+                // borrar polilinea previa
+                polyUNI?.remove()
+
+                // dibujar nueva polilinea
+                val polyLineOptions = PolylineOptions()
+                    .width(12f)
+                    .color(Color.RED)
+                    .startCap(RoundCap())
+                    .endCap(RoundCap())
+                    .jointType(JointType.ROUND)
+
+                rutaUNI.forEach { polyLineOptions.add(it) }
+
+                polyUNI  = gmap.addPolyline(polyLineOptions)
+
+                Toast.makeText(
+                    this@MapActivity,
+                    "Distancia a la UNI: ${"%.2f".format(distUNI / 1000)} km",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+
+    // ruta al hospital mas cercana (ruta real)
+    private fun calcularRutaMasCercana() {
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            if (listaHospitales.isEmpty()) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@MapActivity,
+                        "No hay hospitales cargados",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                return@launch
+            }
+
+            var hospitalGanador: Hospital? = null
+            var mejorDist = 1e12
+            var mejorRuta: List<LatLng>? = null
+
+            for (h in listaHospitales) {
+
+                val (dist, ruta) = obtenerRutaEntrePuntos(h.getLatLng())
+
+                if (ruta != null && dist < mejorDist) {
+                    mejorDist = dist
+                    mejorRuta = ruta
+                    hospitalGanador = h
+                }
+            }
+
+            if (hospitalGanador == null || mejorRuta == null) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@MapActivity,
+                        "No se pudo calcular rutas",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                return@launch
+            }
+
+            // Dibujar ruta
+            runOnUiThread {
+
+                polyHospital?.remove()
+
+                val polyLineOptions = PolylineOptions()
+                    .width(12f)
+                    .color(Color.BLUE)
+                    .startCap(RoundCap())
+                    .endCap(RoundCap())
+                    .jointType(JointType.ROUND)
+
+                mejorRuta!!.forEach { polyLineOptions.add(it) }
+
+                polyHospital = gmap.addPolyline(polyLineOptions)
+
+                Toast.makeText(
+                    this@MapActivity,
+                    "Hospital más cercano: ${hospitalGanador.nombre}\n" +
+                            "Distancia: ${"%.2f".format(mejorDist / 1000)} km",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
