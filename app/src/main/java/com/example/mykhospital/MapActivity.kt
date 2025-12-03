@@ -3,7 +3,6 @@ package com.example.mykhospital
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,6 +37,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.*
 
+// base de datos
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
     private lateinit var btnRegresar: Button
@@ -55,8 +60,8 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
     var poly: Polyline? = null //para manejo de la distancia de mi GPS al hospital mas cercano
 
     //parametros geograficos
-    private var Pi = 3.14159265375
-    private var r = 6371.0 //radio de la tierra
+    //private var Pi = 3.14159265375
+    //private var r = 6371.0 //radio de la tierra
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +69,9 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
         setContentView(R.layout.activity_map)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Firebase
+        database = FirebaseDatabase.getInstance().reference.child("hospital")
 
         // inicializar mapa
         val mapFragment = supportFragmentManager
@@ -95,8 +103,43 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         gmap = googleMap
         obtenerMiUbicacion()
-        // Aquí ya puedes colocar marcadores, zoom, etc.
+        // cargar hospitales desde Firebase
+        cargarHospitalesEnMapa()
     }
+
+    private fun cargarHospitalesEnMapa() {
+
+        database.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                for (registro in snapshot.children) {
+                    val h = registro.getValue(Hospital::class.java)
+
+                    if (h != null) {
+                        val pos = LatLng(h.latitud, h.longitud)
+
+                        gmap.addMarker(
+                            MarkerOptions()
+                                .position(pos)
+                                .title(h.nombre)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                        )
+                    }
+                }
+
+                Toast.makeText(
+                    this@MapActivity,
+                    "Hospitales cargados en el mapa",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+
+
 
     // Obtener mi GPS real
     private fun obtenerMiUbicacion() {
