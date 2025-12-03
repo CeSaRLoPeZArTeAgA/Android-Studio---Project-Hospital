@@ -1,6 +1,11 @@
 package com.example.mykhospital
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
 import android.widget.CheckBox
@@ -9,25 +14,23 @@ import android.widget.Spinner
 import android.widget.Toast
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.database.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class FormActivity : AppCompatActivity() {
-
     private lateinit var database: DatabaseReference
-
     private lateinit var etNombre: EditText
     private lateinit var etDireccion: EditText
     private lateinit var etLatitud: EditText
     private lateinit var etLongitud: EditText
     private lateinit var spinnerGenero: Spinner
-
     private lateinit var btnAgregar: Button
     private lateinit var btnRegresar: Button
     private lateinit var btnSalir: Button
+    private lateinit var btnSelecionar: Button
 
     // Checkboxes de especialidades
     private lateinit var chCardiologia: CheckBox
@@ -36,15 +39,17 @@ class FormActivity : AppCompatActivity() {
     private lateinit var chEndocrinologia: CheckBox
     private lateinit var chOncologia: CheckBox
     private lateinit var chHematologia: CheckBox
-
     private lateinit var rvHospitales: RecyclerView
     private val listaHospitales = ArrayList<Hospital>()
     private lateinit var adapter: HospitalAdapter
 
+    private lateinit var imgHospital: ImageView
+
+    var mBitmap = Bitmap.createBitmap(512,512, Bitmap.Config.ARGB_8888)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form)
-
 
         //llenado de 10 hospitales por unica vez
         //primero inicializamos la base de datos
@@ -62,10 +67,8 @@ class FormActivity : AppCompatActivity() {
                     prefs.edit().putBoolean("hospitales_cargados", true).apply()
                 }
             }
-
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) { }
         })
-
 
         // enlace a las cajas de texto en el layout activity_form
         etNombre = findViewById(R.id.etNombre)
@@ -87,6 +90,9 @@ class FormActivity : AppCompatActivity() {
         btnRegresar = findViewById(R.id.btnRegresar)
         btnSalir = findViewById(R.id.btnSalir)
 
+        // para la seleccion de la imagen del hospital
+        btnSelecionar = findViewById(R.id.btnSelecionar)
+        imgHospital = findViewById(R.id.imgHospital)
 
         // ListView y adaptador
         rvHospitales = findViewById(R.id.rvHospitales)
@@ -101,12 +107,29 @@ class FormActivity : AppCompatActivity() {
                 eliminarHospital(hospitalAEliminar)
             }
         )
-
         rvHospitales.adapter = adapter
+
+        // launcher para escoger imagen
+        val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                val selectedImage: Uri? = result.data?.data
+                selectedImage?.let {
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
+                    mBitmap = bitmap
+                    imgHospital.setImageBitmap(bitmap)
+                }
+            }
+        }
+
+        //boton de cargar imagen desde la galeria del movil
+        btnSelecionar.setOnClickListener {
+            val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            galleryLauncher.launch(galleryIntent)
+        }
+
 
         // Listener Firebase (carga hospitales)
         cargarHospitalesFirebase()
-
 
         // guarda hospital nuevo
         btnAgregar.setOnClickListener {
@@ -122,12 +145,9 @@ class FormActivity : AppCompatActivity() {
         btnSalir.setOnClickListener {
             finishAffinity()
         }
-
     }
 
-
     private fun cargarHospitalEnFormulario(h: Hospital) {
-
         // Cargar datos básicos
         etNombre.setText(h.nombre)
         etDireccion.setText(h.direccion)
@@ -158,7 +178,6 @@ class FormActivity : AppCompatActivity() {
                 "Hematología" -> chHematologia.isChecked = true
             }
         }
-
         Toast.makeText(this, "Seleccionado: ${h.nombre}", Toast.LENGTH_SHORT).show()
     }
 
@@ -199,10 +218,8 @@ class FormActivity : AppCompatActivity() {
                         listaHospitales.add(h)
                     }
                 }
-
                 adapter.notifyDataSetChanged()
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
@@ -210,12 +227,10 @@ class FormActivity : AppCompatActivity() {
 
     // función eliminar en Firebase con click largo
     private fun eliminarHospital(h: Hospital) {
-
         if (h.key == null) {
             Toast.makeText(this, "Error: clave Firebase no encontrada", Toast.LENGTH_SHORT).show()
             return
         }
-
         database.child(h.key!!).removeValue()
             .addOnSuccessListener {
                 Toast.makeText(this, "Hospital eliminado", Toast.LENGTH_SHORT).show()
@@ -240,7 +255,6 @@ class FormActivity : AppCompatActivity() {
             Toast.makeText(this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
-
         // recoge especiaidades selecionadad con los checkbox
         val especialidades = mutableListOf<String>()
         if (chCardiologia.isChecked) especialidades.add("Cardiología")
@@ -249,12 +263,10 @@ class FormActivity : AppCompatActivity() {
         if (chEndocrinologia.isChecked) especialidades.add("Endocrinología")
         if (chOncologia.isChecked) especialidades.add("Oncología")
         if (chHematologia.isChecked) especialidades.add("Hematología")
-
         // si no hay ninguna selecion en el checkbox, se guardara con "-"
         if (especialidades.isEmpty()) {
             especialidades.add("-")
         }
-
         try {
             val latitud = latitudStr.toDouble()
             val longitud = longitudStr.toDouble()

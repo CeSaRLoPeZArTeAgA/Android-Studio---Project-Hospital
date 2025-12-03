@@ -140,7 +140,7 @@
 
                 <!-- BOTÓN MÁS GRANDE Y ELEGANTE -->
                 <Button
-                    android:id="@+id/btnSeleccionar"
+                    android:id="@+id/btnSelecionar"
                     android:layout_width="160dp"
                     android:layout_height="55dp"
                     android:text="Seleccionar"
@@ -246,11 +246,11 @@
             android:layout_marginBottom="16dp">
 
             <Button
-                android:id="@+id/btnAgregar"
+                android:id="@+id/btnLimpiar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Agregar Hospital"
+                android:text="Limpiar Formulario"
                 android:textSize="15sp"
                 android:background="#4CAF50"
                 android:textColor="#FFFFFF"
@@ -267,6 +267,16 @@
                 android:textColor="#FFFFFF"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnAgregar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Agregar Hospital"
+            android:textSize="15sp"
+            android:background="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
 
         <!-- LISTA DE HOSPITALES -->
         <TextView
