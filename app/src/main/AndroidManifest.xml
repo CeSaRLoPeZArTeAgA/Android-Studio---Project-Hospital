@@ -35,6 +35,7 @@
         <!-- AGREGAR ESTO (lo mínimo necesario) -->
         <activity android:name=".FormActivity" />
         <activity android:name=".MapActivity" />
+        <activity android:name=".EmergenciaActivity" />
 
     </application>
 

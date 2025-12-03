@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="18dp"
+    android:background="#F2F2F2">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- CARD: Título -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="18dp"
+            android:elevation="4dp"
+            android:layout_marginBottom="18dp"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Búsqueda de Hospital Cercano"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#333333" />
+        </LinearLayout>
+
+        <!-- CARD: Especialidades Médicas -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:elevation="4dp"
+            android:padding="18dp"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Seleccione la especialidad requerida"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:textSize="17sp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- PRIMERA FILA -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/chCardiologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cardiología"
+                    android:textSize="11sp" />
+
+                <CheckBox
+                    android:id="@+id/chNeumologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Neumología"
+                    android:textSize="11sp" />
+
+                <CheckBox
+                    android:id="@+id/chTraumatologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Traumatología"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- SEGUNDA FILA -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <CheckBox
+                    android:id="@+id/chEndocrinologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Endocrinología"
+                    android:textSize="11sp" />
+
+                <CheckBox
+                    android:id="@+id/chOncologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Oncología"
+                    android:textSize="11sp" />
+
+                <CheckBox
+                    android:id="@+id/chHematologia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Hematología"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- BOTONES -->
+        <Button
+            android:id="@+id/btnRegresar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Regresar al Menú Principal"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:background="#1976D2"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/btnSalir"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Salir del Sistema"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:background="#D32F2F"
+            android:layout_marginTop="12dp" />
+        <Button
+            android:id="@+id/btnMapa"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Busqueda en el Mapa"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:background="#D32F2F"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+
+</ScrollView>

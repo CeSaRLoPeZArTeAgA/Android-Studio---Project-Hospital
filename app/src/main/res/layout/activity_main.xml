@@ -10,17 +10,17 @@
         android:id="@+id/btnFormulario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Abrir Formulario"
         android:layout_marginBottom="16dp"
-        android:textSize="18sp"/>
+        android:text="Ingreso Nuevo Hospital"
+        android:textSize="18sp" />
 
     <Button
-        android:id="@+id/btnMapa"
+        android:id="@+id/btnEmergencia"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Abrir Mapa"
         android:layout_marginBottom="16dp"
-        android:textSize="18sp"/>
+        android:text="Busqueda Hospital en Mapa"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btnSalir"

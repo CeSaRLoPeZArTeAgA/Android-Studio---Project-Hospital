@@ -11,7 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 class MainActivity : AppCompatActivity() {
 
     private lateinit var btnFormulario: Button
-    private lateinit var btnMapa: Button
+    private lateinit var btnEmergencia: Button
 
     private lateinit var btnSalir: Button
 
@@ -26,9 +26,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        btnMapa = findViewById<Button>(R.id.btnMapa)
-        btnMapa.setOnClickListener {
-            val intent = Intent(this, MapActivity::class.java)
+        btnEmergencia = findViewById<Button>(R.id.btnEmergencia)
+        btnEmergencia.setOnClickListener {
+            val intent = Intent(this, EmergenciaActivity::class.java)
             startActivity(intent)
         }
 

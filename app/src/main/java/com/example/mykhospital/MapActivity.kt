@@ -38,7 +38,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.*
 
-
 class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
     private lateinit var btnRegresar: Button
@@ -46,6 +45,7 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
     private lateinit var btnSalir: Button
     private lateinit var gmap: GoogleMap  // mapa listo para usar
 
+    private lateinit var database: DatabaseReference
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     lateinit var Miposicion: LatLng  // mi posicion GPS

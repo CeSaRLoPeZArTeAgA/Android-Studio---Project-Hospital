@@ -31,6 +31,8 @@ class FormActivity : AppCompatActivity() {
     private lateinit var btnRegresar: Button
     private lateinit var btnSalir: Button
     private lateinit var btnSelecionar: Button
+    private lateinit var btnLimpiar: Button
+    private lateinit var btnModificar: Button
 
     // Checkboxes de especialidades
     private lateinit var chCardiologia: CheckBox
@@ -55,11 +57,11 @@ class FormActivity : AppCompatActivity() {
         //primero inicializamos la base de datos
         database = FirebaseDatabase.getInstance().reference.child("hospital")
 
-        // SharedPreferences para controlar si ya se insertaron los hospitales
+        // sharedPreferences para controlar si ya se insertaron los hospitales
         val prefs = getSharedPreferences("APP_PREFS", MODE_PRIVATE)
         val yaInsertado = prefs.getBoolean("hospitales_cargados", false)
 
-        // Ejecutar solo si NO se ha cargado antes
+        // ejecutar solo si NO se ha cargado antes
         database.addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
             override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                 if (!yaInsertado) {
@@ -84,11 +86,14 @@ class FormActivity : AppCompatActivity() {
         chOncologia = findViewById(R.id.chOncologia)
         chHematologia = findViewById(R.id.chHematologia)
 
-        //enlace a los botones en el loyout activity_form
+        // enlace a los botones en el loyout activity_form
         spinnerGenero = findViewById(R.id.spinnerGenero)
         btnAgregar = findViewById(R.id.btnAgregar)
         btnRegresar = findViewById(R.id.btnRegresar)
         btnSalir = findViewById(R.id.btnSalir)
+        btnLimpiar = findViewById(R.id.btnLimpiar)
+        btnModificar = findViewById(R.id.btnModificar)
+
 
         // para la seleccion de la imagen del hospital
         btnSelecionar = findViewById(R.id.btnSelecionar)
@@ -121,12 +126,11 @@ class FormActivity : AppCompatActivity() {
             }
         }
 
-        //boton de cargar imagen desde la galeria del movil
+        // boton de cargar imagen desde la galeria del movil
         btnSelecionar.setOnClickListener {
             val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             galleryLauncher.launch(galleryIntent)
         }
-
 
         // Listener Firebase (carga hospitales)
         cargarHospitalesFirebase()
@@ -145,7 +149,121 @@ class FormActivity : AppCompatActivity() {
         btnSalir.setOnClickListener {
             finishAffinity()
         }
+
+        //boton borrar campos
+        btnLimpiar.setOnClickListener {
+            limpiarFormulario()
+            Toast.makeText(this, "Formulario limpiado", Toast.LENGTH_SHORT).show()
+        }
+
+        //boton que modifica formulario
+        btnModificar.setOnClickListener {
+            modificarHospital()
+        }
     }
+
+    private fun modificarHospital() {
+
+        val nombre = etNombre.text.toString().trim()
+        val direccion = etDireccion.text.toString().trim()
+        val horario = spinnerGenero.selectedItem.toString().trim()
+        val latitudStr = etLatitud.text.toString().trim()
+        val longitudStr = etLongitud.text.toString().trim()
+
+        // Validación de campos vacíos
+        if (nombre.isEmpty() || direccion.isEmpty() || horario.isEmpty() ||
+            latitudStr.isEmpty() || longitudStr.isEmpty()) {
+
+            Toast.makeText(this, "Faltan datos por llenar antes de modificar", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val especialidades = mutableListOf<String>()
+        if (chCardiologia.isChecked) especialidades.add("Cardiología")
+        if (chNeumologia.isChecked) especialidades.add("Neumología")
+        if (chTraumatologia.isChecked) especialidades.add("Traumatología")
+        if (chEndocrinologia.isChecked) especialidades.add("Endocrinología")
+        if (chOncologia.isChecked) especialidades.add("Oncología")
+        if (chHematologia.isChecked) especialidades.add("Hematología")
+        if (especialidades.isEmpty()) especialidades.add("-")
+
+        val latitud = latitudStr.toDouble()
+        val longitud = longitudStr.toDouble()
+
+        // BUSCAR hospital por nombre
+        database.orderByChild("nombre").equalTo(nombre)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+
+                    if (!snapshot.exists()) {
+                        Toast.makeText(
+                            this@FormActivity,
+                            "No existe un hospital con ese nombre para modificar",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return
+                    }
+
+                    // Si existe, tomar la clave
+                    for (registro in snapshot.children) {
+                        val key = registro.key
+
+                        val datosActualizados = mapOf(
+                            "nombre" to nombre,
+                            "direccion" to direccion,
+                            "horario_atencion" to horario,
+                            "latitud" to latitud,
+                            "longitud" to longitud,
+                            "especialidades" to especialidades
+                        )
+
+                        database.child(key!!).updateChildren(datosActualizados)
+                            .addOnSuccessListener {
+                                Toast.makeText(
+                                    this@FormActivity,
+                                    "Hospital modificado correctamente",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                limpiarFormulario()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(
+                                    this@FormActivity,
+                                    "Error al modificar hospital",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
+
+
+    private fun limpiarFormulario() {
+        // Limpiar EditText
+        etNombre.setText("")
+        etDireccion.setText("")
+        etLatitud.setText("")
+        etLongitud.setText("")
+        // Reiniciar Spinner al primer ítem
+        spinnerGenero.setSelection(0)
+        // Desmarcar CheckBoxes
+        chCardiologia.isChecked = false
+        chNeumologia.isChecked = false
+        chTraumatologia.isChecked = false
+        chEndocrinologia.isChecked = false
+        chOncologia.isChecked = false
+        chHematologia.isChecked = false
+        // Reiniciar imagen a la predeterminada
+        imgHospital.setImageResource(android.R.drawable.ic_menu_mylocation)
+        // Resetear bitmap interno
+        mBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+    }
+
 
     private fun cargarHospitalEnFormulario(h: Hospital) {
         // Cargar datos básicos
@@ -278,7 +396,7 @@ class FormActivity : AppCompatActivity() {
                 database.child(key).setValue(hospital)
                     .addOnSuccessListener {
                         Toast.makeText(this, "Hospital guardado exitosamente", Toast.LENGTH_SHORT).show()
-                        finish()
+                        limpiarFormulario() //devuelve a la misma pagina limpiando todos los campos
                     }
                     .addOnFailureListener {
                         Toast.makeText(this, "Error al guardar Hospital", Toast.LENGTH_SHORT).show()
