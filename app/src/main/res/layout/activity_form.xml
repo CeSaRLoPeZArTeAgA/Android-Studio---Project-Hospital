@@ -41,7 +41,7 @@
                 android:layout_marginBottom="12dp"/>
 
             <EditText
-                android:id="@+id/txtNombre"
+                android:id="@+id/etNombre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Nombre del Hospital"
@@ -50,18 +50,28 @@
                 android:textSize="14sp"
                 android:layout_marginBottom="12dp"/>
 
-            <!-- Fila POS X y Y -->
+            <EditText
+                android:id="@+id/etDireccion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Direccion Hospital"
+                android:padding="10dp"
+                android:background="#EFEFEF"
+                android:textSize="14sp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Fila POS Laltitud y Longitud -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <EditText
-                    android:id="@+id/txtPosX"
+                    android:id="@+id/etLatitud"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Pos X"
+                    android:hint="Latitud"
                     android:inputType="numberDecimal|numberSigned"
                     android:padding="10dp"
                     android:textSize="14sp"
@@ -69,11 +79,11 @@
                     android:layout_marginEnd="8dp"/>
 
                 <EditText
-                    android:id="@+id/txtPosY"
+                    android:id="@+id/etLongitud"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Pos Y"
+                    android:hint="Longitud"
                     android:inputType="numberDecimal|numberSigned"
                     android:padding="10dp"
                     android:textSize="14sp"
@@ -103,8 +113,48 @@
                     android:layout_weight="1"
                     android:entries="@array/horario_atencion" />
             </LinearLayout>
-        </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
+
+                <!-- IMAGEN MÁS GRANDE A LA IZQUIERDA -->
+                <ImageView
+                    android:id="@+id/imgHospital"
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:src="@android:drawable/ic_menu_mylocation"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="24dp"
+                    android:scaleType="centerInside" />
+
+                <!-- ESPACIADOR PARA MOVER BOTÓN A LA DERECHA -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+
+                <!-- BOTÓN MÁS GRANDE Y ELEGANTE -->
+                <Button
+                    android:id="@+id/btnSeleccionar"
+                    android:layout_width="160dp"
+                    android:layout_height="55dp"
+                    android:text="Seleccionar"
+                    android:textSize="18sp"
+                    android:backgroundTint="#5E35B1"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginEnd="12dp"
+                    android:padding="12dp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+
+
+        </LinearLayout>
         <!-- CARD: Especialidades Médicas -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -200,8 +250,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Agregar"
-                android:textSize="16sp"
+                android:text="Agregar Hospital"
+                android:textSize="15sp"
                 android:background="#4CAF50"
                 android:textColor="#FFFFFF"
                 android:layout_marginEnd="8dp"/>
@@ -211,10 +261,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Modificar"
-                android:textSize="16sp"
-                android:background="#FFC107"
-                android:textColor="#000000"
+                android:text="Modificar Hospital"
+                android:textSize="15sp"
+                android:background="#4CAF50"
+                android:textColor="#FFFFFF"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
 
@@ -228,15 +278,13 @@
             android:gravity="center"
             android:layout_marginBottom="12dp"/>
 
-        <ListView
-            android:id="@+id/lvmiscontactosfirebase"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvHospitales"
             android:layout_width="match_parent"
-            android:layout_height="260dp"
-            android:background="#FFFFFF"
-            android:elevation="3dp"
-            android:divider="#CCCCCC"
-            android:dividerHeight="1dp"
-            android:padding="8dp"/>
+            android:layout_height="300dp"
+            android:padding="8dp"
+            android:background="#FFFFFF"/>
+
 
         <!-- BOTONES FINALES -->
         <Button
