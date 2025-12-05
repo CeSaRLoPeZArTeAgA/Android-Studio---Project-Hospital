@@ -9,14 +9,16 @@ data class Hospital(
         val latitud: Double = 0.0,
         val longitud: Double = 0.0,
         val direccion: String = "",
-        val especialidades: List<String> = emptyList()
+        val especialidades: List<String> = emptyList(),
+        val imgBase64: String = ""              //para manejo de envio de la imagen en base64
 ) {
-        constructor() : this("", "", 0.0, 0.0, "",emptyList())
+        constructor() : this("", "", 0.0, 0.0, "",emptyList(),"")
 
-        // Clave de Firebase (no se guarda en la BD)
+        // clave de Firebase (no se guarda en la BD)
         @get:Exclude
         var key: String? = null
 
+        // utilidad para Google Maps
         @Exclude
         fun getLatLng(): LatLng {
             return LatLng(latitud, longitud)

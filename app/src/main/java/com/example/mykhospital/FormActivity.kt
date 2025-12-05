@@ -47,7 +47,15 @@ class FormActivity : AppCompatActivity() {
 
     private lateinit var imgHospital: ImageView
 
-    var mBitmap = Bitmap.createBitmap(512,512, Bitmap.Config.ARGB_8888)
+    // guarda la imagen previa del hospital cargado
+    private var mBitmap: Bitmap? = null
+    private var imagenBase64Original: String? = null
+
+    // para evitar recarga visual después de modificar
+    private var evitarRecargaFormulario = false
+
+    // *** NUEVO: GUARDA LA KEY DEL HOSPITAL SELECCIONADO ***
+    private var keySeleccionada: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,7 +122,7 @@ class FormActivity : AppCompatActivity() {
         )
         rvHospitales.adapter = adapter
 
-        // launcher para escoger imagen
+        // launcher para escoger imagen desde la galeria
         val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
                 val selectedImage: Uri? = result.data?.data
@@ -122,6 +130,8 @@ class FormActivity : AppCompatActivity() {
                     val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
                     mBitmap = bitmap
                     imgHospital.setImageBitmap(bitmap)
+                    // si el usuario selecciona nueva imagen, ya no queremos usar la imagen previa
+                    imagenBase64Original = null
                 }
             }
         }
@@ -162,7 +172,39 @@ class FormActivity : AppCompatActivity() {
         }
     }
 
+    // redimensionar imagenes grandres
+    private fun resizeBitmap(bitmap: Bitmap, maxSize: Int = 600): Bitmap {   // CAMBIO AQUÍ
+        val width = bitmap.width
+        val height = bitmap.height
+
+        val ratio: Float = width.toFloat() / height.toFloat()
+        var newWidth = maxSize
+        var newHeight = maxSize
+
+        if (ratio > 1) {
+            newHeight = (newWidth / ratio).toInt()
+        } else {
+            newWidth = (newHeight * ratio).toInt()
+        }
+
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+    }
+    // funcion para pasar a base64 una imagen
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val resized = resizeBitmap(bitmap, 600)
+        val baos = java.io.ByteArrayOutputStream()
+        resized.compress(Bitmap.CompressFormat.JPEG, 80, baos)
+        return android.util.Base64.encodeToString(
+            baos.toByteArray(),
+            android.util.Base64.DEFAULT
+        )
+    }
     private fun modificarHospital() {
+
+        if (keySeleccionada == null) {
+            Toast.makeText(this, "Seleccione un hospital antes de modificar", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val nombre = etNombre.text.toString().trim()
         val direccion = etDireccion.text.toString().trim()
@@ -190,56 +232,46 @@ class FormActivity : AppCompatActivity() {
         val latitud = latitudStr.toDouble()
         val longitud = longitudStr.toDouble()
 
-        // BUSCAR hospital por nombre
-        database.orderByChild("nombre").equalTo(nombre)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+        // *** USAR LA KEY DEL HOSPITAL SELECCIONADO ***
+        val imgBase64Final =
+            if (mBitmap != null) bitmapToBase64(mBitmap!!)
+            else imagenBase64Original ?: ""
 
-                override fun onDataChange(snapshot: DataSnapshot) {
+        val datosActualizados = mapOf(
+            "nombre" to nombre,
+            "direccion" to direccion,
+            "horario_atencion" to horario,
+            "latitud" to latitud,
+            "longitud" to longitud,
+            "especialidades" to especialidades,
+            "imgBase64" to imgBase64Final
+        )
 
-                    if (!snapshot.exists()) {
-                        Toast.makeText(
-                            this@FormActivity,
-                            "No existe un hospital con ese nombre para modificar",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return
-                    }
+        // AQUÍ SE CORRIGE: actualizar solo usando la keySeleccionada
+        database.child(keySeleccionada!!).updateChildren(datosActualizados)
+            .addOnSuccessListener {
+                evitarRecargaFormulario = false
+                Toast.makeText(this, "Hospital modificado", Toast.LENGTH_SHORT).show()
 
-                    // Si existe, tomar la clave
-                    for (registro in snapshot.children) {
-                        val key = registro.key
-
-                        val datosActualizados = mapOf(
-                            "nombre" to nombre,
-                            "direccion" to direccion,
-                            "horario_atencion" to horario,
-                            "latitud" to latitud,
-                            "longitud" to longitud,
-                            "especialidades" to especialidades
-                        )
-
-                        database.child(key!!).updateChildren(datosActualizados)
-                            .addOnSuccessListener {
-                                Toast.makeText(
-                                    this@FormActivity,
-                                    "Hospital modificado correctamente",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-
-                                limpiarFormulario()
+                // ----------------------------------------------------
+                // VUELVE A LEER EL HOSPITAL DESDE FIREBASE (OPCIÓN C)
+                // ----------------------------------------------------
+                database.child(keySeleccionada!!)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val h = snapshot.getValue(Hospital::class.java)
+                            if (h != null) {
+                                h.key = snapshot.key
+                                cargarHospitalEnFormulario(h) // RECARGA DATOS CORRECTOS
                             }
-                            .addOnFailureListener {
-                                Toast.makeText(
-                                    this@FormActivity,
-                                    "Error al modificar hospital",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
+                        }
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
+                limpiarFormulario()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al modificar", Toast.LENGTH_SHORT).show()
+            }
     }
 
 
@@ -260,12 +292,17 @@ class FormActivity : AppCompatActivity() {
         chHematologia.isChecked = false
         // Reiniciar imagen a la predeterminada
         imgHospital.setImageResource(android.R.drawable.ic_menu_mylocation)
-        // Resetear bitmap interno
-        mBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+        mBitmap = null
+        imagenBase64Original = null
+        keySeleccionada = null
     }
 
 
     private fun cargarHospitalEnFormulario(h: Hospital) {
+
+        mBitmap = null
+        imagenBase64Original = h.imgBase64
+        keySeleccionada = h.key
         // Cargar datos básicos
         etNombre.setText(h.nombre)
         etDireccion.setText(h.direccion)
@@ -295,6 +332,20 @@ class FormActivity : AppCompatActivity() {
                 "Oncología" -> chOncologia.isChecked = true
                 "Hematología" -> chHematologia.isChecked = true
             }
+        }
+        // carga imagen Base64 si existe
+        if (!h.imgBase64.isNullOrEmpty()) {
+            try {
+                val bytes = android.util.Base64.decode(h.imgBase64, android.util.Base64.DEFAULT)
+                val bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                imgHospital.setImageBitmap(bmp)
+                mBitmap = bmp
+                imagenBase64Original = h.imgBase64
+            } catch (e: Exception) {
+                imgHospital.setImageResource(android.R.drawable.ic_menu_mylocation)
+            }
+        } else {
+            imgHospital.setImageResource(android.R.drawable.ic_menu_mylocation)
         }
         Toast.makeText(this, "Seleccionado: ${h.nombre}", Toast.LENGTH_SHORT).show()
     }
@@ -332,34 +383,29 @@ class FormActivity : AppCompatActivity() {
                 for (registro in snapshot.children) {
                     val h = registro.getValue(Hospital::class.java)
                     if (h != null) {
-                        h.key = registro.key          // ← ahora SÍ existe y es var
+                        h.key = registro.key
                         listaHospitales.add(h)
                     }
                 }
+
                 adapter.notifyDataSetChanged()
+
             }
+
             override fun onCancelled(error: DatabaseError) {}
         })
     }
 
 
-    // función eliminar en Firebase con click largo
+    // funcion eliminar en Firebase con click largo
     private fun eliminarHospital(h: Hospital) {
-        if (h.key == null) {
-            Toast.makeText(this, "Error: clave Firebase no encontrada", Toast.LENGTH_SHORT).show()
-            return
+        h.key?.let {
+            database.child(it).removeValue()
         }
-        database.child(h.key!!).removeValue()
-            .addOnSuccessListener {
-                Toast.makeText(this, "Hospital eliminado", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show()
-            }
     }
 
 
-    //funcion que guarda un hospital en la base de datos realtime
+    // funcion que guarda un hospital en la base de datos realtime
     private fun guardarHospital() {
         val nombre = etNombre.text.toString().trim()
         val direccion = etDireccion.text.toString().trim()
@@ -369,7 +415,6 @@ class FormActivity : AppCompatActivity() {
 
         if (nombre.isEmpty() || direccion.isEmpty() || horario.isEmpty() ||
             latitudStr.isEmpty() || longitudStr.isEmpty()) {
-
             Toast.makeText(this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
@@ -385,25 +430,33 @@ class FormActivity : AppCompatActivity() {
         if (especialidades.isEmpty()) {
             especialidades.add("-")
         }
-        try {
-            val latitud = latitudStr.toDouble()
-            val longitud = longitudStr.toDouble()
 
-            val hospital = Hospital(horario, nombre, latitud, longitud, direccion,especialidades = especialidades)
-            val key = database.push().key
+        val latitud = latitudStr.toDouble()
+        val longitud = longitudStr.toDouble()
 
-            if (key != null) {
-                database.child(key).setValue(hospital)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Hospital guardado exitosamente", Toast.LENGTH_SHORT).show()
-                        limpiarFormulario() //devuelve a la misma pagina limpiando todos los campos
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Error al guardar Hospital", Toast.LENGTH_SHORT).show()
-                    }
-            }
-        } catch (e: NumberFormatException) {
-            Toast.makeText(this, "Formato inválido para latitud/longitud", Toast.LENGTH_SHORT).show()
+        val imgBase64Final = if (mBitmap != null) bitmapToBase64(mBitmap!!) else ""
+
+        val hospital = Hospital(
+            horario_atencion = horario,
+            nombre = nombre,
+            latitud = latitud,
+            longitud = longitud,
+            direccion = direccion,
+            especialidades = especialidades,
+            imgBase64 = imgBase64Final
+        )
+
+        val key = database.push().key
+        if (key != null) {
+            database.child(key).setValue(hospital)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Hospital guardado", Toast.LENGTH_SHORT).show()
+                    limpiarFormulario()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al guardar", Toast.LENGTH_SHORT).show()
+                }
         }
+
     }
 }
