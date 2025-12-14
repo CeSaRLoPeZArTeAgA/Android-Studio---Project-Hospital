@@ -64,9 +64,17 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
     // lista donde guardamos hospitales desde Firebase y se usara para los calculos
     private val listaHospitales = mutableListOf<Hospital>()
 
+    // 👉 ESPECIALIDADES SELECCIONADAS
+    private var especialidadesFiltro: List<String> = emptyList()
+    private var horarioConsulta: String = "24 horas"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        especialidadesFiltro = intent.getStringArrayListExtra("especialidades") ?: emptyList()
+
+        horarioConsulta = intent.getStringExtra("horarioConsulta") ?: "24 horas"
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -119,23 +127,33 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
                 for (registro in snapshot.children) {
 
-                    val h = registro.getValue(Hospital::class.java)
+                    val h = registro.getValue(Hospital::class.java) ?: continue
 
-                    if (h != null) {
-
-                        // se agrega a la lista real
-                        listaHospitales.add(h)
-
-                        // dibuja marcador
-                        val pos = LatLng(h.latitud, h.longitud)
-
-                        gmap.addMarker(
-                            MarkerOptions()
-                                .position(pos)
-                                .title(h.nombre)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        )
+                    // FILTRO POR ESPECIALIDAD
+                    if (especialidadesFiltro.isNotEmpty() &&
+                        h.especialidades.none { it in especialidadesFiltro }) {
+                        continue
                     }
+
+                    // FILTRO HORARIO
+                    if (h.horario_atencion != "24 horas" &&
+                        h.horario_atencion != horarioConsulta) {
+                        continue
+                    }
+
+                    listaHospitales.add(h)
+
+                    gmap.addMarker(
+                        MarkerOptions()
+                            .position(LatLng(h.latitud, h.longitud))
+                            .title(h.nombre)
+                            .icon(
+                                BitmapDescriptorFactory.defaultMarker(
+                                    BitmapDescriptorFactory.HUE_GREEN
+                                )
+                            )
+                    )
+
                 }
 
                 Toast.makeText(
