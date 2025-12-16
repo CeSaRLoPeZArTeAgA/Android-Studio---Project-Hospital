@@ -232,7 +232,7 @@ class FormActivity : AppCompatActivity() {
         val latitud = latitudStr.toDouble()
         val longitud = longitudStr.toDouble()
 
-        // *** USAR LA KEY DEL HOSPITAL SELECCIONADO ***
+        // usar la key del hospital seleccionado
         val imgBase64Final =
             if (mBitmap != null) bitmapToBase64(mBitmap!!)
             else imagenBase64Original ?: ""
@@ -247,22 +247,21 @@ class FormActivity : AppCompatActivity() {
             "imgBase64" to imgBase64Final
         )
 
-        // AQUÍ SE CORRIGE: actualizar solo usando la keySeleccionada
+        //  actualizar solo usando la keySeleccionada
         database.child(keySeleccionada!!).updateChildren(datosActualizados)
             .addOnSuccessListener {
                 evitarRecargaFormulario = false
                 Toast.makeText(this, "Hospital modificado", Toast.LENGTH_SHORT).show()
 
-                // ----------------------------------------------------
-                // VUELVE A LEER EL HOSPITAL DESDE FIREBASE (OPCIÓN C)
-                // ----------------------------------------------------
+
+                // vuelve a leer el hospital desde Firebase
                 database.child(keySeleccionada!!)
                     .addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             val h = snapshot.getValue(Hospital::class.java)
                             if (h != null) {
                                 h.key = snapshot.key
-                                cargarHospitalEnFormulario(h) // RECARGA DATOS CORRECTOS
+                                cargarHospitalEnFormulario(h) // recarga de datos
                             }
                         }
                         override fun onCancelled(error: DatabaseError) {}
@@ -276,13 +275,16 @@ class FormActivity : AppCompatActivity() {
 
 
     private fun limpiarFormulario() {
+
         // Limpiar EditText
         etNombre.setText("")
         etDireccion.setText("")
         etLatitud.setText("")
         etLongitud.setText("")
+
         // Reiniciar Spinner al primer ítem
         spinnerGenero.setSelection(0)
+
         // Desmarcar CheckBoxes
         chCardiologia.isChecked = false
         chNeumologia.isChecked = false
@@ -290,6 +292,7 @@ class FormActivity : AppCompatActivity() {
         chEndocrinologia.isChecked = false
         chOncologia.isChecked = false
         chHematologia.isChecked = false
+
         // Reiniciar imagen a la predeterminada
         imgHospital.setImageResource(android.R.drawable.ic_menu_mylocation)
         mBitmap = null
@@ -297,12 +300,12 @@ class FormActivity : AppCompatActivity() {
         keySeleccionada = null
     }
 
-
     private fun cargarHospitalEnFormulario(h: Hospital) {
 
         mBitmap = null
         imagenBase64Original = h.imgBase64
         keySeleccionada = h.key
+
         // Cargar datos básicos
         etNombre.setText(h.nombre)
         etDireccion.setText(h.direccion)
@@ -426,6 +429,7 @@ class FormActivity : AppCompatActivity() {
         if (chEndocrinologia.isChecked) especialidades.add("Endocrinología")
         if (chOncologia.isChecked) especialidades.add("Oncología")
         if (chHematologia.isChecked) especialidades.add("Hematología")
+
         // si no hay ninguna selecion en el checkbox, se guardara con "-"
         if (especialidades.isEmpty()) {
             especialidades.add("-")

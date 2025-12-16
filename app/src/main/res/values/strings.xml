@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MykHospital</string>
-    <string name="google_maps_key">AIzaSyBhL7_1Y7I5EvCP9-YtoxpVTQN40pA3fhc</string>
+    <string name="google_maps_key">AIzaSyDPiNJY6zuiXTP_O9kK40zF4GBEBihw4uU</string>
 
     <string-array name="horario_atencion">
         <item>Mañana</item>

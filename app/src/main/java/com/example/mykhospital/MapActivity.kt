@@ -49,22 +49,18 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
     private lateinit var btnCalcular: Button
     private lateinit var btnSalir: Button
     private lateinit var gmap: GoogleMap  // mapa listo para usar
-
     private lateinit var database: DatabaseReference
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
     lateinit var Miposicion: LatLng  // mi posicion GPS
-
     private var UniPosicion = LatLng(-12.061638, -76.977782)  // Puerta 5 UNI
 
-    // Polilíneas independientes
-    private var polyUNI: Polyline? = null
+    // Polilínea independiente
     private var polyHospital: Polyline? = null  //para manejo de la distancia de mi GPS al hospital mas cercano
 
     // lista donde guardamos hospitales desde Firebase y se usara para los calculos
     private val listaHospitales = mutableListOf<Hospital>()
 
-    // 👉 ESPECIALIDADES SELECCIONADAS
+    // especialidad seleccionadas
     private var especialidadesFiltro: List<String> = emptyList()
     private var horarioConsulta: String = "24 horas"
 
@@ -96,10 +92,8 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
         btnCalcular = findViewById<Button>(R.id.btnCalcular)
         btnCalcular.setOnClickListener {
             // Limpia polilíneas previas
-            polyUNI?.remove()
             polyHospital?.remove()
             calcularRutaMasCercana()
-            calcularDistanciaUNI()
         }
 
         //boton salir del sistema
@@ -129,13 +123,13 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
 
                     val h = registro.getValue(Hospital::class.java) ?: continue
 
-                    // FILTRO POR ESPECIALIDAD
+                    // filtro de especialidad
                     if (especialidadesFiltro.isNotEmpty() &&
                         h.especialidades.none { it in especialidadesFiltro }) {
                         continue
                     }
 
-                    // FILTRO HORARIO
+                    // filtro de horario
                     if (h.horario_atencion != "24 horas" &&
                         h.horario_atencion != horarioConsulta) {
                         continue
@@ -193,14 +187,6 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 )
 
-                // Marcador UNI
-                gmap.addMarker(
-                    MarkerOptions()
-                        .position(UniPosicion)
-                        .title("Puerta 5 UNI")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                )
-
                 gmap.animateCamera(
                     CameraUpdateFactory.newLatLngZoom(Miposicion, 14f),
                     2000,
@@ -235,52 +221,6 @@ class MapActivity : AppCompatActivity(),OnMapReadyCallback {
             Pair(1e12, null)
         }
     }
-
-
-    //  calculo de la ruta minima a la UNI
-    private fun calcularDistanciaUNI() {
-
-        CoroutineScope(Dispatchers.IO).launch {
-
-            val (distUNI, rutaUNI) = obtenerRutaEntrePuntos(UniPosicion)
-
-            if (rutaUNI == null) {
-                runOnUiThread {
-                    Toast.makeText(
-                        this@MapActivity,
-                        "No se pudo obtener ruta hacia la UNI",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                return@launch
-            }
-
-            runOnUiThread {
-
-                // borrar polilinea previa
-                polyUNI?.remove()
-
-                // dibujar nueva polilinea
-                val polyLineOptions = PolylineOptions()
-                    .width(12f)
-                    .color(Color.RED)
-                    .startCap(RoundCap())
-                    .endCap(RoundCap())
-                    .jointType(JointType.ROUND)
-
-                rutaUNI.forEach { polyLineOptions.add(it) }
-
-                polyUNI  = gmap.addPolyline(polyLineOptions)
-
-                Toast.makeText(
-                    this@MapActivity,
-                    "Distancia a la UNI: ${"%.2f".format(distUNI / 1000)} km",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
-
 
     // ruta al hospital mas cercana (ruta real)
     private fun calcularRutaMasCercana() {

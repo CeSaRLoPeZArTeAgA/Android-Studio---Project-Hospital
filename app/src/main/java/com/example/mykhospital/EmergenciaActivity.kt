@@ -36,8 +36,6 @@ class EmergenciaActivity: AppCompatActivity() {
         chOncologia = findViewById(R.id.chOncologia)
         chHematologia = findViewById(R.id.chHematologia)
 
-
-
         btnMapa = findViewById(R.id.btnMapa)
         btnMapa.setOnClickListener {
             // variables de especialidades
